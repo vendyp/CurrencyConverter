@@ -8,7 +8,6 @@ using Microsoft.Extensions.Caching.Distributed;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.DependencyInjection.Extensions;
 using Microsoft.Extensions.Logging;
-using StackExchange.Redis;
 using Testcontainers.Redis;
 
 namespace CurrencyConverter.Tests;
@@ -54,13 +53,5 @@ public class DefaultWebApplicationFactory : WebApplicationFactory<IApiMarker>, I
     {
         await _redisContainer.StopAsync();
         //await _seqContainer.StopAsync();
-    }
-
-    public async Task<string?> GetStringAsync(string key)
-    {
-        var redis = await ConnectionMultiplexer.ConnectAsync(_redisContainer.GetConnectionString());
-        var db = redis.GetDatabase(); // Get the value
-        RedisValue value = await db.StringGetAsync(key);
-        return value.HasValue ? value.ToString() : null;
     }
 }

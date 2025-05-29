@@ -59,5 +59,16 @@ public class GetLatestExchangeRatesTests : IClassFixture<DefaultWebApplicationFa
 #if DEBUG
         _output.WriteLine($"Key content: {key}");
 #endif
+        
+        var url = string.Format(TestRedis.RelativePath, key);
+
+#if DEBUG
+        _output.WriteLine($"Url content: {url}");
+#endif
+        
+        response = await _client.GetAsync(string.Format(TestRedis.RelativePath, key));
+        content = await response.Content.ReadAsStringAsync();
+        response.IsSuccessStatusCode.ShouldBeTrue();
+        content.ShouldNotBeNullOrWhiteSpace();
     }
 }
