@@ -18,28 +18,25 @@ internal class FrankfurterService : ICurrencyConverterProvider
         _httpClient = httpClientFactory.CreateClient("Frankfurter");
     }
 
-    internal sealed class FrankfurterRates
+    internal sealed class FrankfurterRates : FrankfurterBaseResponse
     {
-        [JsonPropertyName("amount")] public decimal? Amount { get; set; }
-        [JsonPropertyName("base")] public string? Base { get; set; }
         [JsonPropertyName("date")] public string? Date { get; set; }
+
         [JsonPropertyName("rates")] public Dictionary<string, decimal> Rates { get; set; } = new();
     }
 
-    internal sealed class FrankfurterPaginationRates
+    internal sealed class FrankfurterPaginationRates : FrankfurterBaseResponse
     {
-        [JsonPropertyName("amount")] public string? Base { get; set; }
-
         [JsonPropertyName("start_date")] public string? StartDate { get; set; }
 
         [JsonPropertyName("end_date")] public string? EndDate { get; set; }
 
-        [JsonPropertyName("rates")] public Dictionary<string, decimal> Rates { get; set; } = new();
+        [JsonPropertyName("rates")] public Dictionary<string, Dictionary<string, decimal>> Rates { get; set; } = new();
     }
 
     internal class FrankfurterBaseResponse
     {
-        [JsonPropertyName("amount")] public int? Amount { get; set; }
+        [JsonPropertyName("amount")] public decimal? Amount { get; set; }
 
         [JsonPropertyName("base")] public string? Base { get; set; }
     }
@@ -71,6 +68,13 @@ internal class FrankfurterService : ICurrencyConverterProvider
         if (request.StartDate.HasValue)
         {
             isPagination = true;
+
+            sb.Append($"/{request.StartDate.Value:yyyy-MM-dd}..");
+
+            if (request.EndDate.HasValue)
+            {
+                sb.Append($"{request.EndDate.Value:yyyy-MM-dd}");
+            }
         }
         else
         {
@@ -119,12 +123,11 @@ internal class FrankfurterService : ICurrencyConverterProvider
             result.EndDate = DateTime.Parse(contentObj.EndDate!);
             foreach (var item in contentObj.Rates)
             {
-                result.Rates.Add(item.Key, contentObj.Rates
-                    .Select(e => new CurrencyRate
-                    {
-                        CurrencyId = e.Key,
-                        Rate = e.Value
-                    }).ToList());
+                result.Rates.Add(item.Key, item.Value.Select(e => new CurrencyRate
+                {
+                    CurrencyId = e.Key,
+                    Rate = e.Value
+                }).ToList());
             }
         }
 
