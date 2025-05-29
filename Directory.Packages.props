@@ -19,7 +19,6 @@
     <PackageVersion Include="Respawn" Version="6.2.1" />
     <PackageVersion Include="Azure.Storage.Blobs" Version="12.19.1" />
     <PackageVersion Include="Riok.Mapperly" Version="4.1.0" />
-    <PackageVersion Include="Testcontainers.MsSql" Version="4.0.0" />
     <PackageVersion Include="Swashbuckle.AspNetCore" Version="7.0.0" />
     <PackageVersion Include="Swashbuckle.AspNetCore.Annotations" Version="7.0.0" />
     <PackageVersion Include="Meziantou.Extensions.Logging.Xunit" Version="1.0.7" />
@@ -74,6 +73,8 @@
     </PackageVersion>
     <PackageVersion Include="WireMock.Net" Version="1.8.9" />
     <PackageVersion Include="WireMock.Net.StandAlone" Version="1.8.9" />
+    <PackageVersion Include="Testcontainers" Version="4.4.0" />
+    <PackageVersion Include="Testcontainers.Redis" Version="4.4.0" />
   </ItemGroup>
   <!--Logging packages-->
   <ItemGroup>

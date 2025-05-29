@@ -10,11 +10,8 @@
         <PackageReference Include="xunit.runner.visualstudio"/>
         <PackageReference Include="Shouldly"/>
         <PackageReference Include="Microsoft.AspNetCore.Mvc.Testing" />
-        <PackageReference Include="Testcontainers.MsSql"/>
-        <PackageReference Include="Respawn"/>
-        <PackageReference Include="Bogus"/>
-        <PackageReference Include="WireMock.Net"/>
-        <PackageReference Include="WireMock.Net.StandAlone"/>
+        <PackageReference Include="Testcontainers" />
+        <PackageReference Include="Testcontainers.Redis" />
     </ItemGroup>
 
     <ItemGroup>
