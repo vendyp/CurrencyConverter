@@ -1,4 +1,5 @@
 ﻿using CurrencyConverter.WebApi;
+using CurrencyConverter.WebApi.Common;
 using DotNet.Testcontainers.Builders;
 using DotNet.Testcontainers.Containers;
 using Microsoft.AspNetCore.Hosting;
@@ -7,6 +8,7 @@ using Microsoft.AspNetCore.TestHost;
 using Microsoft.Extensions.Caching.Distributed;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.DependencyInjection.Extensions;
+using Microsoft.Extensions.Hosting;
 using Microsoft.Extensions.Logging;
 using Testcontainers.Redis;
 
@@ -35,6 +37,14 @@ public class DefaultWebApplicationFactory : WebApplicationFactory<IApiMarker>, I
 
         builder.ConfigureTestServices(services =>
         {
+            var descriptors = services.Where(d =>
+                    typeof(IBackgroundService).IsAssignableFrom(d.ImplementationType))
+                .ToList();
+            foreach (var descriptor in descriptors)
+            {
+                services.Remove(descriptor);
+            }
+
             services.RemoveAll<IDistributedCache>();
             services.AddStackExchangeRedisCache(options =>
             {

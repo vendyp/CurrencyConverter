@@ -50,7 +50,11 @@ public class GetLatestExchangeRates : EndpointBaseAsync
 
         await _distributedCache.SetStringAsync(
             string.Format(Constants.RedisKey.LatestExchangeRatesKeyFormat, request.Currency!.ToString()),
-            DefaultJsonSerializer.Serialize(rates),
+            DefaultJsonSerializer.Serialize(results.Rates),
+            new DistributedCacheEntryOptions
+            {
+                AbsoluteExpirationRelativeToNow = TimeSpan.FromHours(23)
+            },
             cancellationToken);
 
         return new GetLatestExchangeRatesResponse

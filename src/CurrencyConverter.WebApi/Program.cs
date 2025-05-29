@@ -1,6 +1,7 @@
 using CurrencyConverter.Application.Abstractions;
 using CurrencyConverter.Infrastructure;
 using CurrencyConverter.WebApi.Common;
+using CurrencyConverter.WebApi.Jobs;
 using CurrencyConverter.WebApi.Services;
 
 var builder = WebApplication.CreateBuilder(args);
@@ -17,6 +18,8 @@ builder.Services.AddStackExchangeRedisCache(options =>
     options.Configuration = builder.Configuration.GetConnectionString(CurrencyConverter.Domain.Constants.ConnectionStringName.RedisConnection);
 });
 builder.Services.AddInfrastructure(builder.Configuration);
+
+builder.Services.AddHostedService<FetchAllCurrencyBackgroundService>();
 
 var app = builder.Build();
 
