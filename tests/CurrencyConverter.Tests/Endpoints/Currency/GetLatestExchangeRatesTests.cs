@@ -4,7 +4,6 @@ using CurrencyConverter.Domain.Enums;
 using CurrencyConverter.WebApi.Endpoints;
 using CurrencyConverter.WebApi.Endpoints.Currency;
 using Microsoft.AspNetCore.WebUtilities;
-using Microsoft.VisualBasic;
 using Shouldly;
 using Xunit.Abstractions;
 
@@ -12,7 +11,6 @@ namespace CurrencyConverter.Tests.Endpoints.Currency;
 
 public class GetLatestExchangeRatesTests : IClassFixture<DefaultWebApplicationFactory>
 {
-    private readonly DefaultWebApplicationFactory _factory;
     private readonly ITestOutputHelper _output;
     private readonly HttpClient _client;
 
@@ -20,7 +18,6 @@ public class GetLatestExchangeRatesTests : IClassFixture<DefaultWebApplicationFa
         DefaultWebApplicationFactory factory,
         ITestOutputHelper output)
     {
-        _factory = factory;
         _output = output;
         _client = factory.CreateClient();
     }
