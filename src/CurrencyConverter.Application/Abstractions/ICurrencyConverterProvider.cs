@@ -18,6 +18,8 @@ public sealed class CurrencyConverterRequest
     public DateTime? StartDate { get; set; }
 
     public DateTime? EndDate { get; set; }
+    
+    public Enums.Currency[]? Filters { get; set; }
 }
 
 public sealed class CurrencyConverterResponse : BaseCurrencyConverterContract

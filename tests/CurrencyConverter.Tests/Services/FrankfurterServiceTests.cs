@@ -24,7 +24,8 @@ public class FrankfurterServiceTests
     }
 
     [Fact]
-    public async Task FrankfurterService_Given_Correct_Request_To_Get_Latest_With_Default_Base_Should_Return_AsExpected()
+    public async Task
+        FrankfurterService_Given_Correct_Request_To_Get_Latest_With_Default_Base_Should_Return_AsExpected()
     {
         using var scope = ServiceProvider.CreateScope();
         var sut = scope.ServiceProvider.GetRequiredService<FrankfurterService>();
@@ -48,5 +49,25 @@ public class FrankfurterServiceTests
         resp.Base.ShouldNotBeNull();
         resp.Base.ShouldBe(Enums.Currency.USD);
         resp.Rates.ShouldNotBeEmpty();
+    }
+
+    [Fact]
+    public async Task FrankfurterService_Given_Correct_Request_With_Filters_Should_Return_AsExpected()
+    {
+        using var scope = ServiceProvider.CreateScope();
+        var sut = scope.ServiceProvider.GetRequiredService<FrankfurterService>();
+        var req = new CurrencyConverterRequest
+        {
+            Base = Enums.Currency.USD,
+            Filters = [Enums.Currency.IDR, Enums.Currency.GBP, Enums.Currency.AUD]
+        };
+        var resp = await sut.GetAllCurrencyAsync(req, CancellationToken.None);
+
+        resp.IsSuccess.ShouldBeTrue();
+        resp.Base.ShouldNotBeNull();
+        resp.Base.ShouldBe(req.Base);
+        resp.Rates.ShouldNotBeEmpty();
+        resp.Rates.Values.Count.ShouldBe(1);
+        resp.Rates.Values.First().Count.ShouldBe(req.Filters.Length);
     }
 }

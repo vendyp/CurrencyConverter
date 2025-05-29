@@ -61,44 +61,74 @@ internal class FrankfurterService : ICurrencyConverterProvider
             queryParams["base"] = request.Base.Value.ToString();
         }
 
-        if (request.StartDate is null && request.EndDate is null)
+        if (request.Filters != null)
+        {
+            queryParams["symbols"] = string.Join(',', request.Filters.Select(e => e.ToString()));
+        }
+
+        var isPagination = false;
+
+        if (request.StartDate.HasValue)
+        {
+            isPagination = true;
+        }
+        else
         {
             sb.Append("/latest");
-            var relativePath = QueryHelpers.AddQueryString(sb.ToString(), queryParams!);
-            var response = await _httpClient.GetAsync(relativePath, cancellationToken);
-            var content = await response.Content.ReadAsStringAsync(cancellationToken);
-            if (!response.IsSuccessStatusCode)
-            {
-                return new CurrencyConverterResponse
-                {
-                    IsSuccess = false,
-                    ErrorMessage = content
-                };
-            }
+        }
 
+        var relativePath = QueryHelpers.AddQueryString(sb.ToString(), queryParams!);
+        var response = await _httpClient.GetAsync(relativePath, cancellationToken);
+        var content = await response.Content.ReadAsStringAsync(cancellationToken);
+        if (!response.IsSuccessStatusCode)
+        {
+            return new CurrencyConverterResponse
+            {
+                IsSuccess = false,
+                ErrorMessage = content
+            };
+        }
+
+        var result = new CurrencyConverterResponse
+        {
+            IsSuccess = true,
+        };
+
+        if (!isPagination)
+        {
             var contentObj = DefaultJsonSerializer.Deserialize<FrankfurterRates>(content);
 
             _ = CurrencyExtensions.TryParse(contentObj!.Base, out var baseCurrency);
 
-            var result = new CurrencyConverterResponse
-            {
-                IsSuccess = true,
-                Base = baseCurrency,
-                StartDate = DateTime.Parse(contentObj!.Date!),
-                EndDate = null,
-            };
-
-            result.Rates.Add(string.Empty, contentObj!.Rates
+            result.Base = baseCurrency;
+            result.StartDate = DateTime.Parse(contentObj.Date!);
+            result.Rates.Add(string.Empty, contentObj.Rates
                 .Select(e => new CurrencyRate
                 {
                     CurrencyId = e.Key,
                     Rate = e.Value
                 }).ToList());
+        }
+        else
+        {
+            var contentObj = DefaultJsonSerializer.Deserialize<FrankfurterPaginationRates>(content);
 
-            return result;
+            _ = CurrencyExtensions.TryParse(contentObj!.Base, out var baseCurrency);
+            result.Base = baseCurrency;
+            result.StartDate = DateTime.Parse(contentObj.StartDate!);
+            result.EndDate = DateTime.Parse(contentObj.EndDate!);
+            foreach (var item in contentObj.Rates)
+            {
+                result.Rates.Add(item.Key, contentObj.Rates
+                    .Select(e => new CurrencyRate
+                    {
+                        CurrencyId = e.Key,
+                        Rate = e.Value
+                    }).ToList());
+            }
         }
 
-        throw new NotImplementedException();
+        return result;
     }
 
     public Task<List<CurrencyRate>> GetAllAvailableCurrencyRatesAsync(CancellationToken cancellationToken)
