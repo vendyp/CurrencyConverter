@@ -16,7 +16,7 @@ public class TestApiTests : IClassFixture<DefaultWebApplicationFactory>
     [Fact]
     public async Task TestApi_Should_Return_Ok()
     {
-        var response = await _client.GetAsync(TestApi.Route);
+        var response = await _client.GetAsync(TestApi.RelativePath);
         response.StatusCode.ShouldBe(HttpStatusCode.OK);
     }
 }

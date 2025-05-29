@@ -7,7 +7,7 @@ namespace CurrencyConverter.WebApi.Endpoints;
 [Route("api/test")]
 public class TestApi : EndpointBaseSync.WithoutRequest.WithActionResult
 {
-    public static string Route => "/api/test";
+    public static string RelativePath => "/api/test";
 
     [AllowAnonymous]
     [HttpGet]
