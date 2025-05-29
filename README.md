@@ -1,5 +1,5 @@
 ## README
 
-[![.NET Build n Test](https://github.com/vendyp/CurrencyConverter/actions/workflows/dotnet.yml/badge.svg)](https://github.com/vendyp/CurrencyConverter/actions/workflows/dotnet.yml)
+[![.NET](https://github.com/vendyp/CurrencyConverter/actions/workflows/dotnet.yml/badge.svg)](https://github.com/vendyp/CurrencyConverter/actions/workflows/dotnet.yml)
 
 Soon!
