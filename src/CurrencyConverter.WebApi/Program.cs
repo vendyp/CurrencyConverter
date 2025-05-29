@@ -1,4 +1,5 @@
 using CurrencyConverter.Application.Abstractions;
+using CurrencyConverter.Infrastructure;
 using CurrencyConverter.WebApi.Common;
 using CurrencyConverter.WebApi.Services;
 
@@ -10,6 +11,12 @@ builder.Services.AddSingleton<IClockService, DefaultClockService>();
 builder.Services.AddDefaultAuthentication(builder.Configuration);
 builder.Services.AddSingleton<DefaultContextAccessor>();
 builder.Services.AddTransient(sp => sp.GetRequiredService<DefaultContextAccessor>().Context!);
+
+builder.Services.AddStackExchangeRedisCache(options =>
+{
+    options.Configuration = builder.Configuration.GetConnectionString(CurrencyConverter.Domain.Constants.ConnectionStringName.RedisConnection);
+});
+builder.Services.AddInfrastructure(builder.Configuration);
 
 var app = builder.Build();
 
