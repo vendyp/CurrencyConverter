@@ -42,6 +42,7 @@
     <PackageVersion Include="Microsoft.EntityFrameworkCore.SqlServer" Version="9.0.0" />
     <PackageVersion Include="Microsoft.Extensions.DependencyInjection.Abstractions" Version="9.0.0" />
     <PackageVersion Include="Microsoft.Extensions.DependencyInjection" Version="9.0.0" />
+    <PackageVersion Include="Microsoft.Extensions.Http" Version="9.0.0" />
     <PackageVersion Include="Microsoft.Extensions.Configuration" Version="9.0.0" />
     <PackageVersion Include="Microsoft.Extensions.Configuration.Abstractions" Version="9.0.0" />
     <PackageVersion Include="Microsoft.Extensions.Configuration.Binder" Version="9.0.0" />
@@ -55,6 +56,7 @@
     <PackageVersion Include="Microsoft.AspNetCore.Authorization" Version="9.0.0" />
     <PackageVersion Include="Microsoft.AspNetCore.Authentication.JwtBearer" Version="9.0.0" />
     <PackageVersion Include="Microsoft.VisualStudio.Web.CodeGeneration.Design" Version="8.0.1" />
+    <PackageVersion Include="Microsoft.AspNetCore.WebUtilities" Version="9.0.0" />
   </ItemGroup>
   <!--Test packages-->
   <ItemGroup>
@@ -71,6 +73,7 @@
       <PrivateAssets>all</PrivateAssets>
     </PackageVersion>
     <PackageVersion Include="WireMock.Net" Version="1.8.9" />
+    <PackageVersion Include="WireMock.Net.StandAlone" Version="1.8.9" />
   </ItemGroup>
   <!--Logging packages-->
   <ItemGroup>

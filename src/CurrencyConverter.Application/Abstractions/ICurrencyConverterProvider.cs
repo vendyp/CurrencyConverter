@@ -13,7 +13,7 @@ public interface ICurrencyConverterProvider
 
 public sealed class CurrencyConverterRequest
 {
-    public string? Base { get; set; }
+    public Enums.Currency? Base { get; set; }
 
     public DateTime? StartDate { get; set; }
 
@@ -22,13 +22,13 @@ public sealed class CurrencyConverterRequest
 
 public sealed class CurrencyConverterResponse : BaseCurrencyConverterContract
 {
-    public string? Base { get; set; }
+    public Enums.Currency? Base { get; set; }
 
     public DateTime? StartDate { get; set; }
 
     public DateTime? EndDate { get; set; }
 
-    public List<CurrencyRate> Rates { get; } = [];
+    public Dictionary<string, List<CurrencyRate>> Rates { get; set; } = [];
 }
 
 public sealed class CurrencyRate
