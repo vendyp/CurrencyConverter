@@ -134,8 +134,22 @@ internal class FrankfurterService : ICurrencyConverterProvider
         return result;
     }
 
-    public Task<List<CurrencyRate>> GetAllAvailableCurrencyRatesAsync(CancellationToken cancellationToken)
+    public async Task<List<CurrencyRate>> GetAllAvailableCurrencyRatesAsync(CancellationToken cancellationToken)
     {
-        throw new NotImplementedException();
+        var response = await _httpClient.GetAsync("v1/currencies", cancellationToken);
+        var content = await response.Content.ReadAsStringAsync(cancellationToken);
+        if (!response.IsSuccessStatusCode)
+        {
+            return [];
+        }
+
+        var contentObj = DefaultJsonSerializer.Deserialize<Dictionary<string, string>>(content);
+
+        return contentObj!.Select(item =>
+            new CurrencyRate
+            {
+                CurrencyId = item.Key,
+                Name = item.Value
+            }).ToList();
     }
 }

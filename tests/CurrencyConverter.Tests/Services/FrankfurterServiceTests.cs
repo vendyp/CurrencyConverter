@@ -182,4 +182,13 @@ public class FrankfurterServiceTests
 
         return businessDays;
     }
+
+    [Fact]
+    public async Task FrankfurterService_GetAllAvailableCurrencyRatesAsync_Should_Return_AsExpected()
+    {
+        using var scope = ServiceProvider.CreateScope();
+        var sut = scope.ServiceProvider.GetRequiredService<FrankfurterService>();
+        var resp = await sut.GetAllAvailableCurrencyRatesAsync(CancellationToken.None);
+        resp.Count.ShouldBePositive();
+    }
 }

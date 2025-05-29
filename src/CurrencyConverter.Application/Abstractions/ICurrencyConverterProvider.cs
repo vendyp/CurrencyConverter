@@ -39,6 +39,7 @@ public sealed class CurrencyRate
     public Enums.Currency Currency { get; set; } = Enums.Currency.Undefined;
     public bool IsCurrencyUndefined => Currency == Enums.Currency.Undefined;
     public decimal Rate { get; set; } = 0m;
+    public string? Name { get; set; }
 }
 
 public abstract class BaseCurrencyConverterContract
