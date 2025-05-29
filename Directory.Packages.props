@@ -70,7 +70,6 @@
       <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
       <PrivateAssets>all</PrivateAssets>
     </PackageVersion>
-    <PackageVersion Include="TUnit" Version="0.19.140" />
     <PackageVersion Include="WireMock.Net" Version="1.8.9" />
   </ItemGroup>
   <!--Logging packages-->
