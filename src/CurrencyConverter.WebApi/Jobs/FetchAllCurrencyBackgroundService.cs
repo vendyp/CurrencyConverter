@@ -32,6 +32,11 @@ public class FetchAllCurrencyBackgroundService : BackgroundService, IBackgroundS
 
                 foreach (var item in CurrencyExtensions.GetValues())
                 {
+                    if (item == Enums.Currency.Undefined)
+                    {
+                        continue;
+                    }
+
                     var latestExchangeRatesKeyFormat =
                         string.Format(Constants.RedisKey.LatestExchangeRatesKeyFormat, item.ToString());
                     var latestExchangeKeyFormatCache =
@@ -45,8 +50,9 @@ public class FetchAllCurrencyBackgroundService : BackgroundService, IBackgroundS
 
                         if (response.IsSuccess)
                         {
+                            var rates = response.Rates.SelectMany(e => e.Value).ToList();
                             await cacheService.SetStringAsync(latestExchangeRatesKeyFormat,
-                                DefaultJsonSerializer.Serialize(response.Rates.SelectMany(e => e.Value).ToList()),
+                                DefaultJsonSerializer.Serialize(rates),
                                 new DistributedCacheEntryOptions
                                 {
                                     AbsoluteExpirationRelativeToNow = TimeSpan.FromHours(23)
@@ -72,7 +78,7 @@ public class FetchAllCurrencyBackgroundService : BackgroundService, IBackgroundS
 
                         if (response.IsSuccess)
                         {
-                            await cacheService.SetStringAsync(latestExchangeRatesKeyFormat,
+                            await cacheService.SetStringAsync(historyExchangeRatesKeyFormat,
                                 DefaultJsonSerializer.Serialize(response.Rates),
                                 new DistributedCacheEntryOptions
                                 {
