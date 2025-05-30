@@ -1,4 +1,5 @@
 ﻿using Ardalis.ApiEndpoints;
+using CurrencyConverter.Application;
 using CurrencyConverter.Application.Abstractions;
 using CurrencyConverter.Application.Common;
 using CurrencyConverter.Domain.Enums;
@@ -15,13 +16,16 @@ public class GetLatestExchangeRates : EndpointBaseAsync
 {
     private readonly IDistributedCache _distributedCache;
     private readonly ICurrencyConverterProvider _converterProvider;
+    private readonly CurrencyConverterManager _currencyConverterManager;
 
     public GetLatestExchangeRates(
         IDistributedCache distributedCache,
-        ICurrencyConverterProvider converterProvider)
+        ICurrencyConverterProvider converterProvider,
+        CurrencyConverterManager currencyConverterManager)
     {
         _distributedCache = distributedCache;
         _converterProvider = converterProvider;
+        _currencyConverterManager = currencyConverterManager;
     }
 
     public static string RelativePath => "/api/currency/rates/{0}";
@@ -31,7 +35,7 @@ public class GetLatestExchangeRates : EndpointBaseAsync
         [FromRoute] GetLatestExchangeRatesRequest request,
         CancellationToken cancellationToken = new())
     {
-        var validator = new GetLatestExchangeRatesRequestValidation();
+        var validator = new GetLatestExchangeRatesRequestValidation(_currencyConverterManager);
         var validationResult = await validator.ValidateAsync(request, cancellationToken);
         if (!validationResult.IsValid)
         {
@@ -81,15 +85,31 @@ public class GetLatestExchangeRatesRequest
 
 public class GetLatestExchangeRatesRequestValidation : AbstractValidator<GetLatestExchangeRatesRequest>
 {
-    public GetLatestExchangeRatesRequestValidation()
+    public GetLatestExchangeRatesRequestValidation(CurrencyConverterManager converterManager)
     {
         ClassLevelCascadeMode = CascadeMode.Stop;
 
         RuleFor(e => e.Currency)
             .NotNull()
             .NotEmpty()
-            .Must(ValidCurrency);
+            .Must(ValidCurrency)
+            .Custom((curr, context) =>
+            {
+                if (CurrencyExtensions.TryParse(curr, out var value))
+                {
+                    if (converterManager.ExcludedCurrencies.Any(e => value == e))
+                    {
+                        context.AddFailure("Invalid currency");
+                    }
+                }
+                else
+                {
+                    context.AddFailure("Invalid currency");
+                }
+            });
+        ;
     }
+
 
     private static bool ValidCurrency(string currency)
     {

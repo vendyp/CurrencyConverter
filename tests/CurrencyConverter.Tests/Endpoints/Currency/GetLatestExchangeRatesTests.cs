@@ -22,6 +22,27 @@ public class GetLatestExchangeRatesTests : IClassFixture<DefaultWebApplicationFa
     }
 
     [Fact]
+    public async Task GetLatestExchangeRatesTests_Given_Excluded_Currency_Should_Return_BadRequest()
+    {
+        var response = await _client.GetAsync(TestGenerateToken.RelativePath);
+        response.StatusCode.ShouldBe(HttpStatusCode.OK);
+        var content = await response.Content.ReadAsStringAsync();
+
+#if DEBUG
+        _output.WriteLine($"TestGenerateToken content: {content}");
+#endif
+
+        var testGenerateTokenResponse = DefaultJsonSerializer.Deserialize<TestGenerateTokenResponse>(content);
+
+        var httpRequest = new HttpRequestMessage(HttpMethod.Get,
+            string.Format(GetLatestExchangeRates.RelativePath, nameof(Enums.Currency.PLN)));
+        httpRequest.Headers.Add("Authorization", $"Bearer {testGenerateTokenResponse!.Token}");
+        response = await _client.SendAsync(httpRequest);
+        response.IsSuccessStatusCode.ShouldBeFalse();
+        response.StatusCode.ShouldBe(HttpStatusCode.BadRequest);
+    }
+
+    [Fact]
     public async Task GetLatestExchangeRatesTests_Given_Invalid_Currency_Should_Return_BadRequest()
     {
         var response = await _client.GetAsync(TestGenerateToken.RelativePath);
