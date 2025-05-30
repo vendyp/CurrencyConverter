@@ -57,4 +57,40 @@ public class CurrencyConversionTests : IClassFixture<DefaultWebApplicationFactor
         response.IsSuccessStatusCode.ShouldBeFalse();
         response.StatusCode.ShouldBe(HttpStatusCode.BadRequest);
     }
+
+    [Fact]
+    public async Task CurrencyConversion_Given_Correct_Request_Should_Return_Ok()
+    {
+        var response = await _client.GetAsync(TestGenerateToken.RelativePath);
+        response.StatusCode.ShouldBe(HttpStatusCode.OK);
+        var content = await response.Content.ReadAsStringAsync();
+
+#if DEBUG
+        _output.WriteLine($"TestGenerateToken content: {content}");
+#endif
+        var testGenerateTokenResponse = DefaultJsonSerializer.Deserialize<TestGenerateTokenResponse>(content);
+
+        var request = new CurrencyConversionRequest
+        {
+            BaseCurrency = nameof(Enums.Currency.IDR),
+            Amount = 10000m,
+            ToCurrency = nameof(Enums.Currency.EUR) // excluded currency
+        };
+
+        var httpRequest = new HttpRequestMessage(HttpMethod.Post, CurrencyConversion.RelativePath);
+        httpRequest.Headers.Add("Authorization", $"Bearer {testGenerateTokenResponse!.Token}");
+        httpRequest.Content = new StringContent(
+            DefaultJsonSerializer.Serialize(request),
+            Encoding.UTF8,
+            "application/json");
+        response = await _client.SendAsync(httpRequest);
+        content = await response.Content.ReadAsStringAsync();
+
+#if DEBUG
+        _output.WriteLine($"CurrencyConversion content: {content}");
+#endif
+
+        response.IsSuccessStatusCode.ShouldBeTrue();
+        response.StatusCode.ShouldBe(HttpStatusCode.OK);
+    }
 }

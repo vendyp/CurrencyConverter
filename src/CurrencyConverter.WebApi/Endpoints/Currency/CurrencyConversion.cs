@@ -1,8 +1,11 @@
 ﻿using Ardalis.ApiEndpoints;
 using CurrencyConverter.Application;
+using CurrencyConverter.Application.Abstractions;
+using CurrencyConverter.Application.Common;
 using CurrencyConverter.Domain.Enums;
 using FluentValidation;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.Extensions.Caching.Distributed;
 
 namespace CurrencyConverter.WebApi.Endpoints.Currency;
 
@@ -12,11 +15,18 @@ public class CurrencyConversion : EndpointBaseAsync
     .WithActionResult<CurrencyConversionResponse>
 {
     public static string RelativePath => "/api/currency/conversion";
-    
+
+    private readonly IDistributedCache _distributedCache;
+    private readonly ICurrencyConverterProvider _converterProvider;
     private readonly CurrencyConverterManager _currencyConverterManager;
 
-    public CurrencyConversion(CurrencyConverterManager currencyConverterManager)
+    public CurrencyConversion(
+        IDistributedCache distributedCache,
+        ICurrencyConverterProvider converterProvider,
+        CurrencyConverterManager currencyConverterManager)
     {
+        _distributedCache = distributedCache;
+        _converterProvider = converterProvider;
         _currencyConverterManager = currencyConverterManager;
     }
 
@@ -32,7 +42,41 @@ public class CurrencyConversion : EndpointBaseAsync
             return BadRequest();
         }
 
-        throw new NotImplementedException();
+        List<CurrencyRate> rates;
+        var baseCurrency = CurrencyExtensions.Parse(request.BaseCurrency);
+        var currencyKey = string.Format(Constants.RedisKey.LatestExchangeRatesKeyFormat, baseCurrency);
+        var toCurrency = CurrencyExtensions.Parse(request.ToCurrency);
+        var cachedString = await _distributedCache.GetStringAsync(currencyKey,
+            cancellationToken);
+        if (string.IsNullOrEmpty(cachedString))
+        {
+            var results = await _converterProvider.GetAllCurrencyAsync(new CurrencyConverterRequest
+            {
+                Base = baseCurrency,
+            }, cancellationToken);
+
+            rates = results.Rates.SelectMany(e => e.Value).ToList();
+
+            await _distributedCache.SetStringAsync(currencyKey,
+                DefaultJsonSerializer.Serialize(results.Rates),
+                new DistributedCacheEntryOptions
+                {
+                    AbsoluteExpirationRelativeToNow = TimeSpan.FromHours(23)
+                },
+                cancellationToken);
+        }
+        else
+        {
+            rates = DefaultJsonSerializer.Deserialize<List<CurrencyRate>>(cachedString)!;
+        }
+
+        var convertedAmount = Math.Round(request.Amount!.Value * rates.First(e => e.Currency == toCurrency).Rate, 2);
+
+        return new CurrencyConversionResponse
+        {
+            Amount = request.Amount!.Value,
+            ToAmount = convertedAmount
+        };
     }
 }
 
@@ -93,7 +137,6 @@ public class CurrencyConversionRequestValidation : AbstractValidator<CurrencyCon
 
 public class CurrencyConversionResponse
 {
-    public decimal? BaseAmount { get; set; }
     public decimal? Amount { get; set; }
     public decimal? ToAmount { get; set; }
 }

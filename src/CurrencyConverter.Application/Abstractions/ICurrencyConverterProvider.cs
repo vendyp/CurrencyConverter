@@ -18,7 +18,7 @@ public sealed class CurrencyConverterRequest
     public DateTime? StartDate { get; set; }
 
     public DateTime? EndDate { get; set; }
-    
+
     public Enums.Currency[]? Filters { get; set; }
 }
 
@@ -36,14 +36,17 @@ public sealed class CurrencyConverterResponse : BaseCurrencyConverterContract
 public sealed class CurrencyRate
 {
     public string? CurrencyId { get; set; }
-    public Enums.Currency Currency { get; set; } = Enums.Currency.Undefined;
-    public bool IsCurrencyUndefined => Currency == Enums.Currency.Undefined;
-    public decimal Rate { get; set; } = 0m;
+
+    public Enums.Currency Currency =>
+        IsCurrencyUndefined ? Enums.Currency.Undefined : CurrencyExtensions.Parse(CurrencyId!);
+
+    public bool IsCurrencyUndefined => !CurrencyExtensions.IsDefined(CurrencyId ?? string.Empty);
+    public decimal Rate { get; set; }
     public string? Name { get; set; }
 }
 
 public abstract class BaseCurrencyConverterContract
 {
-    public bool IsSuccess { get; set; } = false;
+    public bool IsSuccess { get; set; }
     public string? ErrorMessage { get; set; }
 }
