@@ -23,7 +23,7 @@ provide accurate and efficient currency exchange functionalities using free curr
 - Change directory to WebApi, then type `dotnet run`
 - It will run under `localhost:5000`
 
-![](https://github.com/vendyp/CurrencyConverter/tree/main/.github/workflows/images/running.png)
+![](https://github.com/vendyp/CurrencyConverter/blob/main/.github/images/running.png)
 
 ## How to test if the project successfully running
 
