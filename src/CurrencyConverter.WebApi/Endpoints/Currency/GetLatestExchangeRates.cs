@@ -2,6 +2,7 @@
 using CurrencyConverter.Application.Abstractions;
 using CurrencyConverter.Application.Common;
 using CurrencyConverter.Domain.Enums;
+using FluentValidation;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.Caching.Distributed;
 
@@ -10,7 +11,7 @@ namespace CurrencyConverter.WebApi.Endpoints.Currency;
 [Route("api/currency/rates")]
 public class GetLatestExchangeRates : EndpointBaseAsync
     .WithRequest<GetLatestExchangeRatesRequest>
-    .WithResult<GetLatestExchangeRatesResponse>
+    .WithActionResult<GetLatestExchangeRatesResponse>
 {
     private readonly IDistributedCache _distributedCache;
     private readonly ICurrencyConverterProvider _converterProvider;
@@ -23,15 +24,22 @@ public class GetLatestExchangeRates : EndpointBaseAsync
         _converterProvider = converterProvider;
     }
 
-    public static string RelativePath => "/api/currency/rates";
+    public static string RelativePath => "/api/currency/rates/{0}";
 
-    [HttpGet]
-    public override async Task<GetLatestExchangeRatesResponse> HandleAsync(
-        GetLatestExchangeRatesRequest request,
+    [HttpGet("{Currency}")]
+    public override async Task<ActionResult<GetLatestExchangeRatesResponse>> HandleAsync(
+        [FromRoute] GetLatestExchangeRatesRequest request,
         CancellationToken cancellationToken = new())
     {
+        var validator = new GetLatestExchangeRatesRequestValidation();
+        var validationResult = await validator.ValidateAsync(request, cancellationToken);
+        if (!validationResult.IsValid)
+        {
+            return BadRequest();
+        }
+
         var cachedString = await _distributedCache.GetStringAsync(
-            string.Format(Constants.RedisKey.LatestExchangeRatesKeyFormat, request.Currency!.ToString()),
+            string.Format(Constants.RedisKey.LatestExchangeRatesKeyFormat, request.Currency),
             cancellationToken);
         if (!string.IsNullOrEmpty(cachedString))
         {
@@ -41,15 +49,17 @@ public class GetLatestExchangeRates : EndpointBaseAsync
             };
         }
 
+        var currency = CurrencyExtensions.Parse(request.Currency);
+
         var results = await _converterProvider.GetAllCurrencyAsync(new CurrencyConverterRequest
         {
-            Base = request.Currency
+            Base = currency
         }, cancellationToken);
 
         var rates = results.Rates.SelectMany(e => e.Value).ToList();
 
         await _distributedCache.SetStringAsync(
-            string.Format(Constants.RedisKey.LatestExchangeRatesKeyFormat, request.Currency!.ToString()),
+            string.Format(Constants.RedisKey.LatestExchangeRatesKeyFormat, request.Currency),
             DefaultJsonSerializer.Serialize(results.Rates),
             new DistributedCacheEntryOptions
             {
@@ -66,7 +76,25 @@ public class GetLatestExchangeRates : EndpointBaseAsync
 
 public class GetLatestExchangeRatesRequest
 {
-    [FromQuery(Name = "curr")] public Enums.Currency? Currency { get; set; } = Enums.Currency.EUR;
+    [FromRoute(Name = "Currency")] public string Currency { get; set; } = null!;
+}
+
+public class GetLatestExchangeRatesRequestValidation : AbstractValidator<GetLatestExchangeRatesRequest>
+{
+    public GetLatestExchangeRatesRequestValidation()
+    {
+        ClassLevelCascadeMode = CascadeMode.Stop;
+
+        RuleFor(e => e.Currency)
+            .NotNull()
+            .NotEmpty()
+            .Must(ValidCurrency);
+    }
+
+    private static bool ValidCurrency(string currency)
+    {
+        return CurrencyExtensions.IsDefined(currency);
+    }
 }
 
 public class GetLatestExchangeRatesResponse
