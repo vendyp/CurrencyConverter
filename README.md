@@ -60,3 +60,10 @@ as response
   "toAmount": 40.94
 }
 ```
+
+## Built-in Features
+
+1. JWT Token
+2. Rate Limiting Middleware
+3. Use ProblemDetails [RFC 7807](https://datatracker.ietf.org/doc/html/rfc7807) and ExceptionHandler
+4. Response Time Logging Middleware
