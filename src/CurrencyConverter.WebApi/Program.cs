@@ -1,11 +1,10 @@
 using CurrencyConverter.Application;
 using CurrencyConverter.Application.Abstractions;
-using CurrencyConverter.Application.Common;
 using CurrencyConverter.Infrastructure;
 using CurrencyConverter.WebApi.Common;
 using CurrencyConverter.WebApi.Jobs;
+using CurrencyConverter.WebApi.Middlewares;
 using CurrencyConverter.WebApi.Services;
-using Microsoft.AspNetCore.Mvc;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -27,28 +26,12 @@ builder.Services.AddScoped<CurrencyConverterManager>();
 
 builder.Services.AddHostedService<FetchAllCurrencyBackgroundService>();
 
+builder.Services.AddExceptionHandler<CustomExceptionHandler>();
 builder.Services.AddProblemDetails();
 
 var app = builder.Build();
 
-app.UseExceptionHandler(err =>
-{
-    err.Run(async context =>
-    {
-        context.Response.StatusCode = 500;
-        context.Response.ContentType = "application/problem+json";
-
-        var problem = new ProblemDetails
-        {
-            Title = "Unexpected Error",
-            Status = 500,
-            Detail = "Something went wrong. Please try again later.",
-            Instance = context.Request.Path
-        };
-
-        await context.Response.WriteAsJsonAsync(problem, DefaultJsonSerializer.DefaultJsonSerializerOptions);
-    });
-});
+app.UseExceptionHandler();
 
 app.UseAuthentication();
 app.UseAuthorization();
