@@ -33,6 +33,8 @@ var app = builder.Build();
 
 app.UseExceptionHandler();
 
+app.UseMiddleware<ResponseTimeMiddleware>();
+
 app.UseAuthentication();
 app.UseAuthorization();
 app.Use((ctx, next) =>
