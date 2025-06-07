@@ -64,6 +64,7 @@ internal sealed class DefaultIdentityContext : IIdentityContext
     private DefaultIdentityContext()
     {
         UserId = Guid.Empty;
+        IsAuthenticated = false;
     }
 
     public DefaultIdentityContext(Guid? id) : this()
@@ -82,8 +83,10 @@ internal sealed class DefaultIdentityContext : IIdentityContext
         }
 
         UserId = Guid.Parse(principal.Claims.FirstOrDefault(e => e.Type == Constants.ClaimNames.Identifier)!.Value);
+        IsAuthenticated = true;
     }
 
     public static IIdentityContext Empty => new DefaultIdentityContext();
+    public bool IsAuthenticated { get; }
     public Guid UserId { get; }
 }

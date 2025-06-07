@@ -23,6 +23,7 @@ builder.Services.AddStackExchangeRedisCache(options =>
 });
 builder.Services.AddInfrastructure(builder.Configuration);
 builder.Services.AddScoped<CurrencyConverterManager>();
+builder.Services.AddScoped<DefaultRateLimitingService>();
 
 builder.Services.AddHostedService<FetchAllCurrencyBackgroundService>();
 
@@ -34,7 +35,6 @@ var app = builder.Build();
 app.UseExceptionHandler();
 
 app.UseMiddleware<ResponseTimeMiddleware>();
-
 app.UseAuthentication();
 app.UseAuthorization();
 app.Use((ctx, next) =>
@@ -43,6 +43,7 @@ app.Use((ctx, next) =>
 
     return next();
 });
+app.UseMiddleware<RateLimitingMiddleware>();
 app.MapControllers() // still needs this in order to Ardalis.ApiEndpoints to work
     .RequireAuthorization();
 

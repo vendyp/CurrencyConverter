@@ -15,5 +15,7 @@ public interface IRequestContext
 
 public interface IIdentityContext
 {
+    bool IsAuthenticated { get; }
+    
     Guid UserId { get; }
 }
